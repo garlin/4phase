@@ -5,101 +5,130 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fitness Progress Tracker</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 0; padding: 10px; }
-    h1, h2 { text-align: center; }
-    .phase-selector, .exercise-list { margin: 10px 0; }
-    .exercise-list label { display: block; margin: 5px 0; }
-    textarea { width: 100%; height: 60px; margin-top: 10px; }
-    progress { width: 100%; height: 20px; }
-    button { padding: 10px; margin: 10px 0; display: block; width: 100%; }
+    body { font-family: Arial, sans-serif; margin: 0; padding: 10px; background-color: #f4f4f9; color: #333; }
+    h1, h2 { text-align: center; color: #555; }
+    .phase-selector, .exercise-list { margin: 15px 0; }
+    .phase-selector select { width: 100%; padding: 10px; font-size: 16px; }
+    .exercise-list label { display: block; margin: 5px 0; padding: 5px 10px; background: #e7e7f1; border-radius: 5px; }
+    textarea { width: 100%; height: 80px; margin-top: 15px; border: 1px solid #ccc; border-radius: 5px; padding: 10px; font-size: 14px; }
+    progress { width: 100%; height: 20px; margin-top: 15px; }
+    button { padding: 10px; margin-top: 15px; width: 100%; background-color: #4caf50; color: #fff; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; }
+    button:hover { background-color: #45a049; }
+    .workout-info { background: #fff; padding: 15px; border-radius: 5px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); }
+    .workout-info p { margin: 5px 0; }
+    .progress-container { margin-top: 20px; }
+    .progress-status { text-align: center; margin-top: 10px; font-size: 14px; color: #777; }
   </style>
 </head>
 <body>
-  <h1>4-Phase Progress Tracker</h1>
+  <h1>Fitness Progress Tracker</h1>
 
   <!-- Phase Selection -->
   <div class="phase-selector">
-    <label for="phase">Select Phase:</label>
+    <label for="phase">Select Your Phase:</label>
     <select id="phase" onchange="loadPhase()">
-      <option value="1">Phase 1</option>
-      <option value="2">Phase 2</option>
-      <option value="3">Phase 3</option>
-      <option value="4">Phase 4</option>
+      <option value="1">Phase 1: Foundation</option>
+      <option value="2">Phase 2: Progression</option>
+      <option value="3">Phase 3: Strength & Endurance</option>
+      <option value="4">Phase 4: Advanced</option>
     </select>
   </div>
 
-  <!-- Workout Checklist -->
+  <!-- Workout Information -->
+  <div id="workout-info" class="workout-info">
+    <h2>Warm-up</h2>
+    <p id="warmup"></p>
+    <h2>Workout Structure</h2>
+    <p id="interval-structure"></p>
+  </div>
+
+  <!-- Exercise Checklist -->
   <div id="exercise-section">
     <h2>Exercises</h2>
     <div class="exercise-list" id="exercise-list"></div>
-    <textarea id="notes" placeholder="Write your notes here..."></textarea>
+    <textarea id="notes" placeholder="Write your workout notes here..."></textarea>
     <button onclick="saveProgress()">Save Progress</button>
-    <progress id="progress-bar" value="0" max="100"></progress>
-    <p id="progress-status"></p>
+    <div class="progress-container">
+      <progress id="progress-bar" value="0" max="100"></progress>
+      <p id="progress-status">Progress: 0%</p>
+    </div>
   </div>
 
   <script>
-    const exercises = {
-      1: ['Push-Ups', 'Bodyweight Squats', 'Plank Hold', 'Reverse Lunges'],
-      2: ['Push-Ups w/ Shoulder Taps', 'Step-Ups', 'Plank to Side Plank', 'Chair Dips'],
-      3: ['Push-Ups to Plank Reach', 'Bulgarian Split Squats', 'Side Plank Hip Dips', 'Decline Push-Ups'],
-      4: ['Pike Push-Ups', 'Single-Leg Step-Ups', 'Plank Arm/Leg Lift', 'Chair-Assisted Pistol Squats']
+    const phaseData = {
+      1: {
+        warmup: "1 min Jumping Jacks, 1 min Arm Circles, 1 min Slow Bodyweight Squats, 1 min High Knees, 1 min Shoulder Rolls",
+        interval: "30 sec work / 10 sec rest, 4 rounds",
+        exercises: ['Push-Ups', 'Bodyweight Squats', 'Plank Hold', 'Reverse Lunges']
+      },
+      2: {
+        warmup: "1 min Jumping Jacks, 1 min Arm Circles, 1 min Slow Bodyweight Squats, 1 min High Knees, 1 min Shoulder Rolls",
+        interval: "40 sec work / 10 sec rest, 4 rounds",
+        exercises: ['Push-Ups w/ Shoulder Taps', 'Step-Ups', 'Plank to Side Plank', 'Chair Dips']
+      },
+      3: {
+        warmup: "1 min Jumping Jacks, 1 min Arm Circles, 1 min Slow Bodyweight Squats, 1 min High Knees, 1 min Shoulder Rolls",
+        interval: "45 sec work / 10 sec rest, 4 rounds",
+        exercises: ['Push-Ups to Plank Reach', 'Bulgarian Split Squats', 'Side Plank Hip Dips', 'Decline Push-Ups']
+      },
+      4: {
+        warmup: "1 min Jumping Jacks, 1 min Arm Circles, 1 min Slow Bodyweight Squats, 1 min High Knees, 1 min Shoulder Rolls",
+        interval: "50 sec work / 10 sec rest, 4 rounds",
+        exercises: ['Pike Push-Ups', 'Single-Leg Step-Ups', 'Plank Arm/Leg Lift', 'Chair-Assisted Pistol Squats']
+      }
     };
 
-    // Load phase exercises
     function loadPhase() {
       const phase = document.getElementById('phase').value;
-      const listContainer = document.getElementById('exercise-list');
-      listContainer.innerHTML = '';
-      exercises[phase].forEach((exercise, index) => {
-        listContainer.innerHTML += `
-          <label>
-            <input type="checkbox" id="exercise-${index}"> ${exercise}
-          </label>`;
+      const { warmup, interval, exercises } = phaseData[phase];
+
+      // Update Warmup and Interval Structure
+      document.getElementById('warmup').textContent = warmup;
+      document.getElementById('interval-structure').textContent = interval;
+
+      // Update Exercise Checklist
+      const exerciseList = document.getElementById('exercise-list');
+      exerciseList.innerHTML = ''; // Clear previous exercises
+      exercises.forEach(exercise => {
+        const label = document.createElement('label');
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        label.appendChild(checkbox);
+        label.appendChild(document.createTextNode(' ' + exercise));
+        exerciseList.appendChild(label);
       });
-      loadProgress();
+
+      // Reset progress
+      document.getElementById('progress-bar').value = 0;
+      document.getElementById('progress-status').textContent = "Progress: 0%";
     }
 
-    // Save progress to LocalStorage
     function saveProgress() {
-      const phase = document.getElementById('phase').value;
+      const checkboxes = document.querySelectorAll('.exercise-list input[type="checkbox"]');
       const notes = document.getElementById('notes').value;
-      const progress = Array.from(document.querySelectorAll('.exercise-list input'))
-                            .filter(input => input.checked).length;
 
-      localStorage.setItem(`phase${phase}-progress`, progress);
-      localStorage.setItem(`phase${phase}-notes`, notes);
-      updateProgressBar();
-    }
-
-    // Load progress from LocalStorage
-    function loadProgress() {
-      const phase = document.getElementById('phase').value;
-      const notes = localStorage.getItem(`phase${phase}-notes`) || '';
-      document.getElementById('notes').value = notes;
-
-      const checkboxes = document.querySelectorAll('.exercise-list input');
-      const savedProgress = localStorage.getItem(`phase${phase}-progress`) || 0;
-
-      checkboxes.forEach((checkbox, index) => {
-        checkbox.checked = index < savedProgress;
+      let completed = 0;
+      checkboxes.forEach(checkbox => {
+        if (checkbox.checked) completed++;
       });
-      updateProgressBar();
+
+      const progress = (completed / checkboxes.length) * 100;
+      document.getElementById('progress-bar').value = progress;
+      document.getElementById('progress-status').textContent = `Progress: ${Math.round(progress)}%`;
+
+      // Save to localStorage
+      const phase = document.getElementById('phase').value;
+      const data = {
+        notes,
+        completed,
+        total: checkboxes.length,
+      };
+      localStorage.setItem(`phase${phase}`, JSON.stringify(data));
+      alert('Progress Saved!');
     }
 
-    // Update progress bar
-    function updateProgressBar() {
-      const checkboxes = document.querySelectorAll('.exercise-list input');
-      const completed = Array.from(checkboxes).filter(input => input.checked).length;
-      const total = checkboxes.length;
-      const progressPercent = Math.round((completed / total) * 100) || 0;
-
-      document.getElementById('progress-bar').value = progressPercent;
-      document.getElementById('progress-status').textContent = `Progress: ${progressPercent}%`;
-    }
-
-    // Initialize
-    loadPhase();
+    // Initialize Phase 1 on page load
+    window.onload = loadPhase;
   </script>
 </body>
 </html>
