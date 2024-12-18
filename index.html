@@ -9,7 +9,7 @@
     h1, h2 { text-align: center; color: #555; }
     .phase-selector, .exercise-list { margin: 15px 0; }
     .phase-selector select { width: 100%; padding: 10px; font-size: 16px; }
-    .exercise-list label { display: block; margin: 5px 0; padding: 5px 10px; background: #e7e7f1; border-radius: 5px; }
+    .exercise-list label { display: flex; align-items: center; margin: 5px 0; padding: 5px 10px; background: #e7e7f1; border-radius: 5px; justify-content: space-between; }
     textarea { width: 100%; height: 80px; margin-top: 15px; border: 1px solid #ccc; border-radius: 5px; padding: 10px; font-size: 14px; }
     progress { width: 100%; height: 20px; margin-top: 15px; }
     button { padding: 10px; margin-top: 15px; width: 100%; background-color: #4caf50; color: #fff; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; }
@@ -57,22 +57,22 @@
   <script>
     const phaseData = {
       1: {
-        warmup: "1 min Jumping Jacks, 1 min Arm Circles, 1 min Slow Bodyweight Squats, 1 min High Knees, 1 min Shoulder Rolls",
+        warmup: "Jumping Jacks, Arm Circles, Slow Bodyweight Squats, High Knees, Shoulder Rolls",
         interval: "30 sec work / 10 sec rest, 4 rounds",
         exercises: ['Push-Ups', 'Bodyweight Squats', 'Plank Hold', 'Reverse Lunges']
       },
       2: {
-        warmup: "1 min Jumping Jacks, 1 min Arm Circles, 1 min Slow Bodyweight Squats, 1 min High Knees, 1 min Shoulder Rolls",
+        warmup: "Same as Phase 1",
         interval: "40 sec work / 10 sec rest, 4 rounds",
         exercises: ['Push-Ups w/ Shoulder Taps', 'Step-Ups', 'Plank to Side Plank', 'Chair Dips']
       },
       3: {
-        warmup: "1 min Jumping Jacks, 1 min Arm Circles, 1 min Slow Bodyweight Squats, 1 min High Knees, 1 min Shoulder Rolls",
+        warmup: "Same as previous phases",
         interval: "45 sec work / 10 sec rest, 4 rounds",
         exercises: ['Push-Ups to Plank Reach', 'Bulgarian Split Squats', 'Side Plank Hip Dips', 'Decline Push-Ups']
       },
       4: {
-        warmup: "1 min Jumping Jacks, 1 min Arm Circles, 1 min Slow Bodyweight Squats, 1 min High Knees, 1 min Shoulder Rolls",
+        warmup: "Same as prior phases",
         interval: "50 sec work / 10 sec rest, 4 rounds",
         exercises: ['Pike Push-Ups', 'Single-Leg Step-Ups', 'Plank Arm/Leg Lift', 'Chair-Assisted Pistol Squats']
       }
@@ -93,6 +93,7 @@
         const label = document.createElement('label');
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
+        checkbox.onchange = () => handleCheckboxChange(checkbox, label, exercise);
         label.appendChild(checkbox);
         label.appendChild(document.createTextNode(' ' + exercise));
         exerciseList.appendChild(label);
@@ -101,6 +102,18 @@
       // Reset progress
       document.getElementById('progress-bar').value = 0;
       document.getElementById('progress-status').textContent = "Progress: 0%";
+    }
+
+    function handleCheckboxChange(checkbox, label, exercise) {
+      if (checkbox.checked) {
+        const reps = prompt(`Enter the number of reps completed for ${exercise}:`);
+        if (!isNaN(reps) && reps.trim() !== '') {
+          label.lastChild.textContent = ` ${reps} ${exercise}`;
+        } else {
+          checkbox.checked = false;
+          alert('Please enter a valid number.');
+        }
+      }
     }
 
     function saveProgress() {
